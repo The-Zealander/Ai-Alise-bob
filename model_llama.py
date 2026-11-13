@@ -9,6 +9,6 @@ def model_llama(msg, mdl):
     ]
 
     response = ollama.chat(model=mdl, messages=messages)
-    rsp = f"Assistant: {mdl}" + response.message.content
+    rsp = f"Assistant: {mdl} \n" + response.message.content
     
     return rsp
