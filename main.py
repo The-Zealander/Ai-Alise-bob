@@ -3,7 +3,7 @@ import ollama
 from pydantic import BaseModel, Field
 
 INTERPRETER_MODEL = "lfm3"
-HEAVY_MODEL = "qwen3.5:9b"
+HEAVY_MODEL = "llama3.2"
 
 INTERPRETER_SYSTEM_PROMPT = """
 You are the front-end interpreter and prompt router for a two-model local AI assistant.
