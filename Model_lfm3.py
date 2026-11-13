@@ -85,7 +85,11 @@ def listen_for_speech() -> str:
     """Capture one utterance using the local Windows dictation recognizer."""
     script = r"""
 Add-Type -AssemblyName System.Speech
-$engine = New-Object System.Speech.Recognition.SpeechRecognitionEngine
+$recognizers = [System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers()
+if ($recognizers.Count -eq 0) {
+    throw "No Windows speech recognition language is installed. Install a Speech language pack in Settings > Time & language > Language & region > Language options."
+}
+$engine = [System.Speech.Recognition.SpeechRecognitionEngine]::new($recognizers[0])
 $engine.LoadGrammar([System.Speech.Recognition.DictationGrammar]::new())
 $engine.SetInputToDefaultAudioDevice()
 $result = $engine.Recognize([TimeSpan]::FromSeconds(15))
