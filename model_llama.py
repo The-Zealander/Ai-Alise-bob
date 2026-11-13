@@ -4,14 +4,15 @@ __all__ = ["HEAVY_MODEL", "run_heavy_model"]
 
 import ollama
 
-msg = input()
-msg1 = " Only return code."
-messages = [
-    {'role': 'system', 'content': 'You are an honest and helpful assistant.'},
-    {'role': 'user', 'content': msg + msg1}
-]
+def model_llama(msg, mdl):
 
-mdl = 'llama3.2'
-response = ollama.chat(model=mdl, messages=messages)
-print(f"Assistant: {mdl}")
-print(response.message.content)
+    msg1 = " Only return code."
+    messages = [
+        {'role': 'system', 'content': 'You are an honest and helpful assistant.'},
+        {'role': 'user', 'content': msg + msg1}
+    ]
+
+    response = ollama.chat(model=mdl, messages=messages)
+    rsp = f"Assistant: {mdl}" + response.message.content
+    
+    return rsp
