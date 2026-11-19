@@ -1,62 +1,53 @@
 import ollama
 import Model_llama
 
+LFM3_MODEL = 'lfm3'
+DELEGATE_PREFIX = 'llama3.2'
 
 SYSTEM_PROMPT = (
-    """You are a helpful assistant and are apart of a small agentic program consisting of you and llama3.2.
-    You are responsible for delegating tasks between yourself and the llama3.2 model.
-    You should only delegate
-    a task to llama3.2 if you think the given task is too complex
-    for you to realiably answer. With this in mind, if you want
-    to delegate a task to llama3.2, please begin your response
-    with 'llama3.2', and then the rest of your response should
-    be a prompt for the llama3.2 model.
-    """
+    "You are a helpful assistant and are a part of a small agentic program "
+    "consisting of you and llama3.2, a larger model. You are responsible for "
+    "delegating tasks between yourself and llama3.2. Only delegate a task if "
+    "you think it is too complex for you to reliably answer. To delegate, begin "
+    f"your response with '{DELEGATE_PREFIX}', and make the rest of your response "
+    "the prompt for llama3.2."
+)
+
+FOLLOW_UP = (
+    "llama3.2 replied:\n{reply}\n\n"
+    "Forward this to the user if it is good enough (reply normally), or start "
+    f"your message with '{DELEGATE_PREFIX}' to ask llama3.2 again."
 )
 
 
-def call_lfm3(prompt, messages=None):
-    """Call lfm3, optionally continuing an existing conversation."""
+def new_conversation():
+    return [{'role': 'system', 'content': SYSTEM_PROMPT}]
+
+
+def call_lfm3(messages):
+    """Send the conversation to lfm3, record its reply in `messages`, return it."""
     if messages is None:
         messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 
-    messages.append({'role': 'user', 'content': prompt})
-    response = ollama.chat(model='lfm3', messages=messages)
+    response = ollama.chat(model=LFM3_MODEL, messages=messages)
     answer = response.message.content.strip()
     messages.append({'role': 'assistant', 'content': answer})
-    print(f"LFM3 answer: {answer} \n\n")
-    while (answer.strip().lower().startswith('llama3.2')):
-        answer = Model_llama.ai_model(answer, 'llama3.2')
-        print(f"llama3.2 answer: {answer} \n\n")
-        answer = Model_llama.ai_model(answer, 'lfm3').partition("(*&*)")[0]
-        print(f"LFM3 answer: {answer} \n\n")
-
-    # if (answer[:8] == 'llama3.2'):
-    #     answer = Model_llama.ai_model(answer, 'llama3.2')
-
+    
     return answer
 
 
 def main():
     messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
-    print("Chat with Alice. Type /bye or quit to exit.")
+    print("Type /bye or quit to exit. \n")
 
-    while True:
-        try:
-            prompt = input("You: ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print("\nGoodbye!")
-            break
+    answer = call_lfm3(messages)
 
-        if prompt.lower() in {'/bye', '/quit', 'quit'}:
-            print("Goodbye!")
-            break
-        if not prompt:
-            continue
+    for _ in range(5):
+        if (answer.strip().lower().startswith('llama3.2')):
+            llama_response = Model_llama.call_llama(answer)
+            messages.append(llama_response)
 
-        result = call_lfm3(prompt, messages)
-        print(result)
+            answer = call_lfm3(messages)
+            answer[len(DELEGATE_PREFIX):].lstrip(' :,-\n')
 
-
-if __name__ == '__main__':
-    main()
+        else: break
