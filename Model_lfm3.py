@@ -20,12 +20,7 @@ FOLLOW_UP = (
 )
 
 
-def new_conversation():
-    return [{'role': 'system', 'content': SYSTEM_PROMPT}]
-
-
 def call_lfm3(messages):
-    """Send the conversation to lfm3, record its reply in `messages`, return it."""
     if messages is None:
         messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
 
@@ -54,22 +49,25 @@ def main():
         if not prompt:
             continue
 
-    answer = call_lfm3(messages)
+        messages.append({'role': 'user', 'content': prompt})
+        answer = call_lfm3(messages)
+        llama_response = None
 
-    for _ in range(5):
-        if answer.strip().lower().startswith(DELEGATE_PREFIX):
-            prompt = answer.strip()[len(DELEGATE_PREFIX):].lstrip(' :,-\n')
-            llama_response = model_llama.call_llama(prompt)
+        for _ in range(5):
+            if not answer.lower().startswith(DELEGATE_PREFIX):
+                break
+            llama_prompt = answer[len(DELEGATE_PREFIX):].lstrip(' :,-\n')
+            llama_response = model_llama.call_llama(llama_prompt)
             messages.append({
                 'role': 'user',
                 'content': FOLLOW_UP.format(reply=llama_response),
             })
-
             answer = call_lfm3(messages)
 
-        else: break
+        if answer.lower().startswith(DELEGATE_PREFIX) and llama_response:
+            answer = llama_response
 
-        print(answer)
+        print(f"Alice: {answer}\n")
 
 if __name__ == '__main__':
     main()
