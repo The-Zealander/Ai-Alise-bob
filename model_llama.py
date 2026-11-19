@@ -19,5 +19,5 @@ def call_llama(prompt):
             {'role': 'user', 'content': prompt},
         ],
     )
+
     return response.message.content.strip()
-    
