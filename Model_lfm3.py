@@ -1,5 +1,5 @@
 import ollama
-import Model_llama
+import model_llama
 
 LFM3_MODEL = 'lfm3'
 DELEGATE_PREFIX = 'llama3.2'
@@ -31,6 +31,7 @@ def call_lfm3(messages):
 
     response = ollama.chat(model=LFM3_MODEL, messages=messages)
     answer = response.message.content.strip()
+    answer[len(DELEGATE_PREFIX):].lstrip(' :,-\n')
     messages.append({'role': 'assistant', 'content': answer})
     
     return answer
@@ -38,7 +39,20 @@ def call_lfm3(messages):
 
 def main():
     messages = [{'role': 'system', 'content': SYSTEM_PROMPT}]
-    print("Type /bye or quit to exit. \n")
+    print("Type /bye or quit to exit.")
+
+    while True:
+        try:
+            prompt = input("You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nGoodbye!")
+            break
+
+        if prompt.lower() in {'/bye', '/quit', 'quit'}:
+            print("Goodbye!")
+            break
+        if not prompt:
+            continue
 
     answer = call_lfm3(messages)
 
@@ -48,6 +62,8 @@ def main():
             messages.append(llama_response)
 
             answer = call_lfm3(messages)
-            answer[len(DELEGATE_PREFIX):].lstrip(' :,-\n')
 
         else: break
+
+if __name__ == '__main__':
+    main()
