@@ -1,12 +1,17 @@
 import ollama
-import model_llama
+import ollamatest
 
 
 SYSTEM_PROMPT = (
-    "You are named 'Alice'. You are the interaction layer of an agentic AI prompt. "
-    "You are responsible for delegating tasks between yourself and another model named 'llama3.2'. "
-    "If llama does a task, you are then "
-    "returned the product and are to describe it for the user and give it to the user."
+    """You are a helpful assistant and are apart of a small agentic program consisting of you and llama3.2.
+    You are responsible for delegating tasks between yourself and the llama3.2 model.
+    You should only delegate
+    a task to llama3.2 if you think the given task is too complex
+    for you to realiably answer. With this in mind, if you want
+    to delegate a task to llama3.2, please begin your response
+    with 'llama3.2', and then the rest of your response should
+    be a prompt for the llama3.2 model.
+    """
 )
 
 
@@ -19,9 +24,17 @@ def call_lfm3(prompt, messages=None):
     response = ollama.chat(model='lfm3', messages=messages)
     answer = response.message.content.strip()
     messages.append({'role': 'assistant', 'content': answer})
-    ans = model_llama.model_llama(answer, 'llama3.2')
+    print(f"LFM3 answer: {answer} \n\n")
+    while (answer[:8] == 'llama3.2'):
+        answer = ollamatest.model_llama(answer, 'llama3.2')
+        print(f"llama3.2 answer: {answer} \n\n")
+        answer = ollamatest.model_llama(answer, 'lfm3').partition("(*&*)")[0]
+        print(f"LFM3 answer: {answer} \n\n")
 
-    return ans
+    # if (answer[:8] == 'llama3.2'):
+    #     answer = ollamatest.model_llama(answer, 'llama3.2')
+
+    return answer
 
 
 def main():
@@ -42,7 +55,7 @@ def main():
             continue
 
         result = call_lfm3(prompt, messages)
-        print(f"Assistant: lfm3\n{result}")
+        print(result)
 
 
 if __name__ == '__main__':
