@@ -1,5 +1,5 @@
 import ollama
-import ollamatest
+import Model_llama
 
 
 SYSTEM_PROMPT = (
@@ -26,13 +26,13 @@ def call_lfm3(prompt, messages=None):
     messages.append({'role': 'assistant', 'content': answer})
     print(f"LFM3 answer: {answer} \n\n")
     while (answer[:8] == 'llama3.2'):
-        answer = ollamatest.model_llama(answer, 'llama3.2')
+        answer = Model_llama.ai_model(answer, 'llama3.2')
         print(f"llama3.2 answer: {answer} \n\n")
-        answer = ollamatest.model_llama(answer, 'lfm3').partition("(*&*)")[0]
+        answer = Model_llama.ai_model(answer, 'lfm3').partition("(*&*)")[0]
         print(f"LFM3 answer: {answer} \n\n")
 
     # if (answer[:8] == 'llama3.2'):
-    #     answer = ollamatest.model_llama(answer, 'llama3.2')
+    #     answer = Model_llama.ai_model(answer, 'llama3.2')
 
     return answer
 
