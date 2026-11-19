@@ -57,13 +57,19 @@ def main():
     answer = call_lfm3(messages)
 
     for _ in range(5):
-        if (answer.strip().lower().startswith('llama3.2')):
-            llama_response = Model_llama.call_llama(answer)
-            messages.append(llama_response)
+        if answer.strip().lower().startswith(DELEGATE_PREFIX):
+            prompt = answer.strip()[len(DELEGATE_PREFIX):].lstrip(' :,-\n')
+            llama_response = model_llama.call_llama(prompt)
+            messages.append({
+                'role': 'user',
+                'content': FOLLOW_UP.format(reply=llama_response),
+            })
 
             answer = call_lfm3(messages)
 
         else: break
+
+        print(answer)
 
 if __name__ == '__main__':
     main()
